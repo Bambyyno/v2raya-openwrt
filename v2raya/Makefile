@@ -69,8 +69,14 @@ endef
 WEB_FILE:=web-c78739c7.tar.gz
 WEB_HASH:=4c131fe32f84f162c452d37bc4bfa02051ea0eafee05e90e77ed65640fb58904
 
+# mips* and loongarch64 have no pure-Go sqlite driver in this tree
+# (service/db/sqlite_driver_mipsle_nocgo.go). Those targets need cgo and
+# the external linker so github.com/mattn/go-sqlite3 is built in.
+# ARCH is values such as mipsel_24kc, not the bare GOARCH.
+ifeq ($(findstring mips,$(ARCH))$(findstring loong,$(ARCH)),)
 GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=0
 GO_PKG_DEFAULT_LDFLAGS:=$(filter-out -linkmode external,$(GO_PKG_DEFAULT_LDFLAGS))
+endif
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
